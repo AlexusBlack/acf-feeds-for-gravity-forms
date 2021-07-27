@@ -1,0 +1,26 @@
+version: '3.2'
+services:
+  web:
+      container_name: gfacff_wordpress
+      image: wordpress
+      links:
+       - mysql
+      environment:
+       - WORDPRESS_DB_NAME=gfacff_test
+       - WORDPRESS_DB_USER=root
+       - WORDPRESS_DB_PASSWORD=67HYCzg7FSZKBkRvgdha
+      ports:
+       - "8080:80"
+      working_dir: /var/www/html
+      volumes:
+        - type: bind
+          source: ./
+          target: /var/www/html/wp-content/plugins/gravity-forms-advanced-custom-field-feeds
+  mysql:
+      container_name: gfacff_mysql
+      image: mysql:5.7
+      ports:
+       - "3306:3306"
+      environment:
+       - MYSQL_ROOT_PASSWORD=67HYCzg7FSZKBkRvgdha
+       - MYSQL_DATABASE=gfacff_test
