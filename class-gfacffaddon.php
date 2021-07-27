@@ -37,8 +37,19 @@ class GFACFFAddOn extends GFFeedAddOn {
                 'class' => 'medium',
               ),
               array(
+                'name'    => 'target_type',
+                'type'    => 'select',
+                'label'   => __('Target Type', 'gfacff'),
+                'choices' => array(
+                  array(
+                    'label' => __('Post/Page', 'gfacff'),
+                    'value' => 'post_or_page'
+                  ),
+                )
+              ),
+              array(
                 'name' => 'target_post_id',
-                'label' => __('Target Post\Page ID', 'gfacff'),
+                'label' => __('Target Post/Page ID', 'gfacff'),
                 'type' => 'text',
                 'class' => 'medium merge-tag-support mt-position-right',
                 'tooltip' => __('Can be page, post or any custom post type with post id', 'gfacff')
