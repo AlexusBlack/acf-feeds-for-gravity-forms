@@ -77,6 +77,10 @@ class GFACFFAddOn extends GFFeedAddOn {
         );
       }
 
+      public function get_menu_icon() {
+        return 'dashicons-media-spreadsheet';
+      }
+
       public function process_feed($feed, $entry, $form) {
         $this->log_debug(__METHOD__ . '(): Start feed processing');
         // Get ACF selector of a target into which we want to write out data
@@ -95,10 +99,37 @@ class GFACFFAddOn extends GFFeedAddOn {
 
         // Extract data from the form entry and write it into appropriate fields
         foreach($acfMap as $target_field_name => $source_field_id) {
-          $source_field_value = rgar($entry, $source_field_id);
-          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-          update_field($target_field_name, $source_field_value, $target_id);
+          $field = null;
+          if(strpos($source_field_id, '.') === false) {
+            $field = $this->get_form_field_by_id($form, intval($source_field_id));
+            if($field === null) {
+              $this->log_debug(__METHOD__ . sprintf('(): GF field with id "%s" wasn\'t found', $source_field_id));
+              continue;
+            }
+          }
+
+          if($field !== null && $field->type == 'checkbox') {
+            $checked_values = array();
+            foreach($field->choices as $idx => $choice) {
+              $value = rgar($entry, $source_field_id . '.' . ($idx + 1));
+              if($value !== '') array_push($checked_values, $value);
+            }
+            $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, implode(', ', $checked_values)));
+            update_field($target_field_name, $checked_values, $target_id);
+
+          } else {
+            $source_field_value = rgar($entry, $source_field_id);
+            $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
+            update_field($target_field_name, $source_field_value, $target_id);
+          }
         }
+      }
+
+      function get_form_field_by_id($form, $field_id) {
+        foreach($form['fields'] as &$field) {
+          if($field->id == $field_id) return $field;
+        }
+        return null;
       }
 }
 ?>
