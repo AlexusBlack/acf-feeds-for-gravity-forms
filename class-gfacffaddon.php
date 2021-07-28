@@ -42,17 +42,17 @@ class GFACFFAddOn extends GFFeedAddOn {
                 'label'   => __('Target Type', 'gfacff'),
                 'choices' => array(
                   array(
-                    'label' => __('Post/Page', 'gfacff'),
-                    'value' => 'post_or_page'
+                    'label' => __('ACF Target Selector', 'gfacff'),
+                    'value' => 'acf_target_selector'
                   ),
                 )
               ),
               array(
                 'name' => 'target_post_id',
-                'label' => __('Target Post/Page ID', 'gfacff'),
+                'label' => __('ACF Target ID', 'gfacff'),
                 'type' => 'text',
                 'class' => 'medium merge-tag-support mt-position-right',
-                'tooltip' => __('Can be page, post or any custom post type with post id', 'gfacff')
+                'tooltip' => __('Can be page, post, custom post, user, term, taxonomy, widget, comment, options page, etc... Empty field means current post. Supports GF merge tags. For more information please refer to ACF documentation.', 'gfacff')
               ),
               array(
                 'name' => 'acf_field_map',
@@ -78,8 +78,17 @@ class GFACFFAddOn extends GFFeedAddOn {
       }
 
       public function process_feed($feed, $entry, $form) {
-        // Get ID of a target post into which we want to write out data
-        $target_id = intval(rgars($feed, 'meta/target_post_id'));
+        $this->log_debug(__METHOD__ . '(): Start feed processing');
+        // Get ACF selector of a target into which we want to write out data
+        $raw_target_id = rgars($feed, 'meta/target_post_id');
+        $target_id = false; // current post
+        // if selector isn't empty, extracting it's value
+        if(trim($raw_target_id) !== "") {
+          $target_id = GFCommon::replace_variables($raw_target_id, $form, $entry, false, false, false);
+          $this->log_debug(__METHOD__ . '(): Provided target: ' . $target_id);
+        } else {
+          $this->log_debug(__METHOD__ . '(): The target is current post');
+        }
 
         // Load dynamic map between GF and ACF fields
         $acfMap = $this->get_dynamic_field_map_fields($feed, 'acf_field_map');
@@ -87,6 +96,7 @@ class GFACFFAddOn extends GFFeedAddOn {
         // Extract data from the form entry and write it into appropriate fields
         foreach($acfMap as $target_field_name => $source_field_id) {
           $source_field_value = rgar($entry, $source_field_id);
+          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
           update_field($target_field_name, $source_field_value, $target_id);
         }
       }
