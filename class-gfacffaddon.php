@@ -100,7 +100,9 @@ class GFACFFAddOn extends GFFeedAddOn {
         // Extract data from the form entry and write it into appropriate fields
         foreach($acfMap as $target_field_name => $source_field_id) {
           $field = null;
+          // If field id contains a dot than it is a subfield
           if(strpos($source_field_id, '.') === false) {
+            // If not getting the field info by ID
             $field = $this->get_form_field_by_id($form, intval($source_field_id));
             if($field === null) {
               $this->log_debug(__METHOD__ . sprintf('(): GF field with id "%s" wasn\'t found', $source_field_id));
@@ -108,7 +110,9 @@ class GFACFFAddOn extends GFFeedAddOn {
             }
           }
 
+          // If we have field information and the field is a checkbox
           if($field !== null && $field->type == 'checkbox') {
+            // Extracting checked choices to write into ACF
             $checked_values = array();
             foreach($field->choices as $idx => $choice) {
               $value = rgar($entry, $source_field_id . '.' . ($idx + 1));
