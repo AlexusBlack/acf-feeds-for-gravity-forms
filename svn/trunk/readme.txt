@@ -12,7 +12,7 @@ Write Gravity Forms submission fields into ACF fields. Accumulate values over ti
 
 == Description ==
 
-Use this plugin to update an ACF field(s) when Gravity Form is submitted. You also can accumulate value in a certain field (only number fields support this at the moment).
+Use this plugin to update an ACF field(s) when Gravity Form is submitted. You also can accumulate value in a certain field (only fields of type `Number` support this at the moment).
 
 Features:
 
@@ -26,8 +26,8 @@ Features:
 Example use cases:
 
 * Count number of submissions
-* Remember name/login/email of last user who submitted the form
-* Make simple page like system
+* Remember name/login/email of the last user who submitted the form
+* Make a simple page like feature
 * Save name of a last sold product
 
 == Installation ==
@@ -36,12 +36,12 @@ Example use cases:
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. In Gravity Form select `ACF Feeds` settings
 4. Create a new ACF Feed
-5. Enter ACF target selector or leave it empty for current/post page
+5. Enter ACF target selector or leave it empty for the current/post page
 6. Map you form fields to ACF fields of your target
 
 == Frequently Asked Questions ==
 
-= How I can target page where my form is located? =
+= How I can target the page where my form is located? =
 
 Leave the target field empty, empty field means current page/post.
 
@@ -51,11 +51,11 @@ Add + or - before the ACF field name in the mapping settings.
 
 = Can I target page/post/user dynamically? =
 
-Yes, `Target` field supports merge tags, so you can pass target ID from your form. It can come from a [dynamically populated GF field](https://docs.gravityforms.com/using-dynamic-population/) too.
+Yes, the `Target` field supports merge tags, so you can pass target ID from your form. It can come from a [dynamically populated GF field](https://docs.gravityforms.com/using-dynamic-population/) too.
 
 == Screenshots ==
 
-1. Complex feed example: dynamic target, add & substract accumulators, conditional feed
+1. Complex feed example: dynamic target, add & subtract accumulators, conditional feed
 2. Simple feed example: Likes counter accumulator. GF settings prevent multiple likes from a single user
 
 == Changelog ==
