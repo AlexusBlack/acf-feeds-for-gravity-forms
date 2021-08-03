@@ -1,1 +1,1 @@
-trunk/readme.txt
+svn/trunk/readme.txt
