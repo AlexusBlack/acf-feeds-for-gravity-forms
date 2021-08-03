@@ -6,9 +6,9 @@ class GFACFFAddOn extends GFFeedAddOn {
       // Earlier versions maybe supported but not tested
       protected $_min_gravityforms_version = '2.5';
       protected $_slug = 'gfacff';
-      protected $_path = 'gravity-forms-acf-feeds/gravity-forms-acf-feeds.php';
+      protected $_path = 'acf-feeds-for-gravity-forms/acf-feeds-for-gravity-forms.php';
       protected $_full_path = __FILE__;
-      protected $_title = 'Advanced Custom Field Feeds Add-On';
+      protected $_title = 'ACF Feeds Add-On';
       protected $_short_title = 'ACF Feeds';
                    
       private static $_instance = null;

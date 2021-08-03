@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Gravity Forms ACF Feeds
+Plugin Name: ACF Feeds for Gravity Forms 
 Description: Write Gravity Forms submission fields into ACF fields. Accumulate values over time.
 Version: 1.0.0
 Author: Alex Chernov

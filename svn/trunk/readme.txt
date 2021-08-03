@@ -1,4 +1,4 @@
-=== Gravity Forms ACF Feeds ===
+=== ACF Feeds for Gravity Forms ===
 Contributors: alexusblack
 Tags: acf, advanced custom fields, gravity forms, feed, integration, form, entry
 Requires at least: 5.4.0
