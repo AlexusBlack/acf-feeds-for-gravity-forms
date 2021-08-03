@@ -112,21 +112,62 @@ class GFACFFAddOn extends GFFeedAddOn {
 
           // If we have field information and the field is a checkbox
           if($field !== null && $field->type == 'checkbox') {
-            // Extracting checked choices to write into ACF
-            $checked_values = array();
-            foreach($field->choices as $idx => $choice) {
-              $value = rgar($entry, $source_field_id . '.' . ($idx + 1));
-              if($value !== '') array_push($checked_values, $value);
-            }
-            $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, implode(', ', $checked_values)));
-            update_field($target_field_name, $checked_values, $target_id);
-
+            $this->process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_id);
+          } else if($field !== null && $field->type == 'number') {
+            $this->process_number($field, $entry, $source_field_id, $target_field_name, $target_id);
           } else {
-            $source_field_value = rgar($entry, $source_field_id);
-            $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-            update_field($target_field_name, $source_field_value, $target_id);
+            $this->process_default($entry, $source_field_id, $target_field_name, $target_id);
           }
         }
+      }
+
+      function process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_id) {
+        // Extracting checked choices to write into ACF
+        $checked_values = array();
+        foreach($field->choices as $idx => $choice) {
+          $value = rgar($entry, $source_field_id . '.' . ($idx + 1));
+          if($value !== '') array_push($checked_values, $value);
+        }
+        $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, implode(', ', $checked_values)));
+        update_field($target_field_name, $checked_values, $target_id);
+      }
+
+      function process_number($field, $entry, $source_field_id, $target_field_name, $target_id) {
+        $first_char = $target_field_name[0];
+        $operation = false;
+        $supported_operations = array('+', '-', '*');
+
+        if(in_array($first_char, $supported_operations)) {
+          $operation = true;
+          $target_field_name = substr($target_field_name, 1);
+          $operation_value = rgar($entry, $source_field_id);
+          $current_value = get_field($target_field_name, $target_id);
+
+          switch($first_char) {
+          case '+':
+            $current_value += $operation_value;
+            break;
+          case '-':
+            $current_value -= $operation_value;
+            break;
+          case '*':
+            $current_value *= $operation_value;
+          };
+
+          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s" with operation "%s"', $source_field_id, $target_field_name, $current_value, $first_char));
+          update_field($target_field_name, $current_value, $target_id);
+
+        } else {
+          $source_field_value = rgar($entry, $source_field_id);
+          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
+          update_field($target_field_name, $source_field_value, $target_id);
+        }
+      }
+      
+      function process_default($entry, $source_field_id, $target_field_name, $target_id) {
+        $source_field_value = rgar($entry, $source_field_id);
+        $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
+        update_field($target_field_name, $source_field_value, $target_id);
       }
 
       function get_form_field_by_id($form, $field_id) {

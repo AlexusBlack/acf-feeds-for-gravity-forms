@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Gravity Forms - Advanced Custom Field Feeds
-Description: Allows to write Gravity Forms submission fields into ACF fields
+Plugin Name: Gravity Forms ACF Feeds
+Description: Write Gravity Forms submission fields into ACF fields. Accumulate values over time.
 Version: 1.0.0
-Author: Alex Chernov @ Red Realities PTY LTD
-Author URI: https://redrealities.com
+Author: Alex Chernov
+Author URI: https://alexchernov.com
 */
 define('GFACFF_ADDON_VERSION', '1.0.0');
 
