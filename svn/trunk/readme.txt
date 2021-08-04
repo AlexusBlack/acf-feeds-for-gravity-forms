@@ -12,13 +12,13 @@ Write Gravity Forms submission fields into ACF fields. Accumulate values over ti
 
 == Description ==
 
-Use this plugin to update an ACF field(s) when Gravity Form is submitted. You also can accumulate value in a certain field (only fields of type `Number` support this at the moment).
+Use this plugin to update an ACF field(s) when Gravity Form is submitted. You also can accumulate value in a certain field (only fields of type `Number` supported at the moment).
 
 Features:
 
 * Target a wide range of WP entities: page, post, custom post, user, term, taxonomy, widget, comment, options page, current page/post.
 * Use GF merge tags in the ACF Target field
-* Simply map ACF and GF fields in one-to-one, one-to-many or many-to-many configurations
+* Simply map ACF and GF fields in one-to-one, one-to-many or many-to-many relations
 * Use ACF field as an accumulator of values (only number fields supported)
 * Accumulate values with "add", "substract" or "multiply" operations
 * Implement complex logic with conditional feeds
