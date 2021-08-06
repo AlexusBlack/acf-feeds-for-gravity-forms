@@ -84,44 +84,59 @@ class GFACFFAddOn extends GFFeedAddOn {
       public function process_feed($feed, $entry, $form) {
         $this->log_debug(__METHOD__ . '(): Start feed processing');
         // Get ACF selector of a target into which we want to write out data
-        $raw_target_id = rgars($feed, 'meta/target_post_id');
-        $target_id = false; // current post
-        // if selector isn't empty, extracting it's value
-        if(trim($raw_target_id) !== "") {
-          $target_id = GFCommon::replace_variables($raw_target_id, $form, $entry, false, false, false);
-          $this->log_debug(__METHOD__ . '(): Provided target: ' . $target_id);
-        } else {
-          $this->log_debug(__METHOD__ . '(): The target is current post');
-        }
+        $target_selector = $this->get_acf_target($feed, $entry, $form); // current post
 
         // Load dynamic map between GF and ACF fields
         $acfMap = $this->get_dynamic_field_map_fields($feed, 'acf_field_map');
 
         // Extract data from the form entry and write it into appropriate fields
         foreach($acfMap as $target_field_name => $source_field_id) {
-          $field = null;
-          // If field id contains a dot than it is a subfield
-          if(strpos($source_field_id, '.') === false) {
-            // If not getting the field info by ID
-            $field = $this->get_form_field_by_id($form, intval($source_field_id));
-            if($field === null) {
-              $this->log_debug(__METHOD__ . sprintf('(): GF field with id "%s" wasn\'t found', $source_field_id));
-              continue;
-            }
+          // If field id contains no dot then it is a proper field, 
+          // otherwise it is a sub-field of a field
+          $is_subfield = strpos($source_field_id, '.') !== false;
+          // get a field object by ID, or parent field for a sub-field
+          $field = $this->get_form_field_by_id($form, $source_field_id);
+
+          // if no field or parent field than something wrong with a source id
+          if($field === null) {
+            $this->log_debug(__METHOD__ . sprintf('(): GF field with id "%s" wasn\'t found', $source_field_id));
+            continue;
           }
 
-          // If we have field information and the field is a checkbox
-          if($field !== null && $field->type == 'checkbox') {
-            $this->process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_id);
-          } else if($field !== null && $field->type == 'number') {
-            $this->process_number($field, $entry, $source_field_id, $target_field_name, $target_id);
-          } else {
-            $this->process_default($entry, $source_field_id, $target_field_name, $target_id);
+          // handling different types of fields
+          if(!$is_subfield) {
+            if($field->type == 'checkbox') {
+              $this->process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_selector);
+            } else if($field !== null && $field->type == 'number') {
+              $this->process_number($field, $entry, $source_field_id, $target_field_name, $target_selector);
+            } else {
+              $this->process_default($entry, $source_field_id, $target_field_name, $target_selector);
+            }
+          else {
+            // default processing for sub-fields for now
+            $this->process_default($entry, $source_field_id, $target_field_name, $target_selector);
           }
         }
       }
 
-      function process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_id) {
+      function get_acf_target($feed, $form, $entry) {
+        // getting a target setting
+        $raw_target = rgars($feed, 'meta/target_post_id');
+        $raw_target = trim($raw_target);
+
+        if($raw_target == '') {
+          $this->log_debug(__METHOD__ . '(): The target is current post');
+          return false; // Current post in ACF
+        }
+
+        // Processing merge tags
+        $target_selector = GFCommon::replace_variables($raw_target, $form, $entry, false, false, false);
+        $this->log_debug(__METHOD__ . '(): Provided ACF target: ' . $target_selector);
+        
+        return $target_selector;
+      }
+
+      function process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_selector) {
         // Extracting checked choices to write into ACF
         $checked_values = array();
         foreach($field->choices as $idx => $choice) {
@@ -129,10 +144,11 @@ class GFACFFAddOn extends GFFeedAddOn {
           if($value !== '') array_push($checked_values, $value);
         }
         $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, implode(', ', $checked_values)));
-        update_field($target_field_name, $checked_values, $target_id);
+        update_field($target_field_name, $checked_values, $target_selector);
       }
 
-      function process_number($field, $entry, $source_field_id, $target_field_name, $target_id) {
+      // FIXME: this method needs refactoring
+      function process_number($field, $entry, $source_field_id, $target_field_name, $target_selector) {
         $first_char = $target_field_name[0];
         $operation = false;
         $supported_operations = array('+', '-', '*');
@@ -141,7 +157,7 @@ class GFACFFAddOn extends GFFeedAddOn {
           $operation = true;
           $target_field_name = substr($target_field_name, 1);
           $operation_value = rgar($entry, $source_field_id);
-          $current_value = get_field($target_field_name, $target_id);
+          $current_value = get_field($target_field_name, $target_selector);
 
           switch($first_char) {
           case '+':
@@ -155,22 +171,25 @@ class GFACFFAddOn extends GFFeedAddOn {
           };
 
           $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s" with operation "%s"', $source_field_id, $target_field_name, $current_value, $first_char));
-          update_field($target_field_name, $current_value, $target_id);
+          update_field($target_field_name, $current_value, $target_selector);
 
         } else {
           $source_field_value = rgar($entry, $source_field_id);
           $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-          update_field($target_field_name, $source_field_value, $target_id);
+          update_field($target_field_name, $source_field_value, $target_selector);
         }
       }
       
-      function process_default($entry, $source_field_id, $target_field_name, $target_id) {
+      function process_default($entry, $source_field_id, $target_field_name, $target_selector) {
         $source_field_value = rgar($entry, $source_field_id);
         $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-        update_field($target_field_name, $source_field_value, $target_id);
+        update_field($target_field_name, $source_field_value, $target_selector);
       }
-
+      
+      // Finds field info by an ID
+      // Will get a parent field if sub-field id provided
       function get_form_field_by_id($form, $field_id) {
+        $field_id = intval($field_id); 
         foreach($form['fields'] as &$field) {
           if($field->id == $field_id) return $field;
         }
