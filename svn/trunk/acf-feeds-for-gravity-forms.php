@@ -8,20 +8,19 @@ Author URI: https://alexchernov.com
 */
 define('GFACFF_ADDON_VERSION', '1.0.0');
 
-add_action('gform_loaded', array('GF_GFACFF_AddOn_Bootstrap', 'load'), 5);
+add_action('gform_loaded', array('ACFFeeds_AddOn_Bootstrap', 'load'), 5);
  
-class GF_GFACFF_AddOn_Bootstrap {
-   
+class ACFFeeds_AddOn_Bootstrap {
   public static function load() {
-    if(!method_exists('GFForms', 'include_addon_framework')) {
-      return;
-    }
+    // Check if Gravity Forms installed
+    if(!method_exists('GFForms', 'include_addon_framework')) return;
+    // Include primary class
     require_once('class-gfacffaddon.php');
     GFAddOn::register('GFACFFAddOn');
   }
 }
  
-function gf_acff_addon() {
+function gf_acf_feeds_addon() {
       return GFACFFAddOn::get_instance();
 }
 ?>
