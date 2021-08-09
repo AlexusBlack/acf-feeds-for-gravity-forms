@@ -103,23 +103,26 @@ class GFACFFAddOn extends GFFeedAddOn {
             continue;
           }
 
+          // processing merge tags in target_field_name
+          $target_field_name = GFCommon::replace_variables($target_field_name, $form, $entry, false, false, false);
+
           // handling different types of fields
           if(!$is_subfield) {
             if($field->type == 'checkbox') {
               $this->process_checkbox($field, $entry, $source_field_id, $target_field_name, $target_selector);
-            } else if($field !== null && $field->type == 'number') {
+            } else if($field->type == 'number') {
               $this->process_number($field, $entry, $source_field_id, $target_field_name, $target_selector);
             } else {
               $this->process_default($entry, $source_field_id, $target_field_name, $target_selector);
             }
-          else {
+          } else {
             // default processing for sub-fields for now
             $this->process_default($entry, $source_field_id, $target_field_name, $target_selector);
           }
         }
       }
 
-      function get_acf_target($feed, $form, $entry) {
+      function get_acf_target($feed, $entry, $form) {
         // getting a target setting
         $raw_target = rgars($feed, 'meta/target_post_id');
         $raw_target = trim($raw_target);
@@ -147,43 +150,66 @@ class GFACFFAddOn extends GFFeedAddOn {
         update_field($target_field_name, $checked_values, $target_selector);
       }
 
-      // FIXME: this method needs refactoring
       function process_number($field, $entry, $source_field_id, $target_field_name, $target_selector) {
-        $first_char = $target_field_name[0];
-        $operation = false;
         $supported_operations = array('+', '-', '*');
+        $operation = null;
 
-        if(in_array($first_char, $supported_operations)) {
-          $operation = true;
+        // checking if any operation required
+        if(in_array($target_field_name[0], $supported_operations)) {
+          $operation = $target_field_name[0];
           $target_field_name = substr($target_field_name, 1);
-          $operation_value = rgar($entry, $source_field_id);
+        }
+
+        // extracing value from entry
+        $entry_value = rgar($entry, $source_field_id);
+
+        // performing operation if required
+        if($operation !== null) {
           $current_value = get_field($target_field_name, $target_selector);
 
-          switch($first_char) {
+          switch($operation) {
           case '+':
-            $current_value += $operation_value;
+            $entry_value = $current_value + $entry_value;
             break;
           case '-':
-            $current_value -= $operation_value;
+            $entry_value = $current_value - $entry_value;
             break;
           case '*':
-            $current_value *= $operation_value;
+            $entry_value = $current_value * $entry_value;
           };
-
-          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s" with operation "%s"', $source_field_id, $target_field_name, $current_value, $first_char));
-          update_field($target_field_name, $current_value, $target_selector);
-
-        } else {
-          $source_field_value = rgar($entry, $source_field_id);
-          $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-          update_field($target_field_name, $source_field_value, $target_selector);
         }
+
+        $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $entry_value));
+        // writing new value into ACF
+        update_field($target_field_name, $entry_value, $target_selector);
       }
       
       function process_default($entry, $source_field_id, $target_field_name, $target_selector) {
-        $source_field_value = rgar($entry, $source_field_id);
-        $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $source_field_value));
-        update_field($target_field_name, $source_field_value, $target_selector);
+        $supported_operations = array('+'); // assuming default is 'string' compatible, concatenation allowed
+        $operation = null;
+
+        // checking if any operation required
+        if(in_array($target_field_name[0], $supported_operations)) {
+          $operation = $target_field_name[0];
+          $target_field_name = substr($target_field_name, 1);
+        }
+
+        // extracing value from entry
+        $entry_value = rgar($entry, $source_field_id);
+
+        // performing operation if required
+        if($operation !== null) {
+          $current_value = get_field($target_field_name, $target_selector);
+
+          switch($operation) {
+          case '+':
+            $entry_value = $current_value . $entry_value;
+            break;
+          }
+        }
+
+        $this->log_debug(__METHOD__ . sprintf('(): Writing from GF field "%s" to ACF field "%s" value "%s"', $source_field_id, $target_field_name, $entry_value));
+        update_field($target_field_name, $entry_value, $target_selector);
       }
       
       // Finds field info by an ID
