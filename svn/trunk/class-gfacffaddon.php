@@ -58,7 +58,7 @@ class GFACFFAddOn extends GFFeedAddOn {
                 'name' => 'acf_field_map',
                 'label' => __('ACF Fields Map', 'gfacff'),
                 'type' => 'dynamic_field_map',
-                'limit' => 10,
+                // 'limit' => 10,
                 'tooltip' => __('Enter ACF field name and then pick a GF field with data for that ACF field')
               ),
               array(
