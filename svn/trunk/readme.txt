@@ -19,9 +19,14 @@ Features:
 * Target a wide range of WP entities: page, post, custom post, user, term, taxonomy, widget, comment, options page, current page/post.
 * Use GF merge tags in the ACF Target field
 * Simply map ACF and GF fields in one-to-one, one-to-many or many-to-many relations
-* Use ACF field as an accumulator of values (only number fields supported)
-* Accumulate values with "add", "substract" or "multiply" operations
+* Use operations on ACF fields to modify currently stored values
+* Number fields support +, - and * math operations
+* All text compatible fields support + operation to join strings
+* ACF field targets support merge tags
 * Implement complex logic with conditional feeds
+
+Any GF field compatible with string/number values should work. Tested GF fields: Single line text, Paragraph Text, Drop Down, Number, Checkboxes, Radio Buttons, Website, Email.
+Any ACF field compatible with string/number values should work. Tested ACF fields: Text, Text Area, Number, Range, Email, Url, Password, Select, Checkbox, Radio Button, Button Group, True / False
 
 Example use cases:
 
@@ -59,6 +64,12 @@ Yes, the `Target` field supports merge tags, so you can pass target ID from your
 2. Simple feed example: Likes counter accumulator. GF settings prevent multiple likes from a single user
 
 == Changelog ==
+
+= 1.0.1 =
+* Support + (concatenation) operation for all string compatible ACF fields
+* Support + (addition) operation for all number compatible ACF fields
+* Allow merge tags in ACF field names. Can be used for dynamic operations or to change target ACF field based on the form data.
+* Code refactoring
 
 = 1.0.0 =
 * Initial release with basic functionality
