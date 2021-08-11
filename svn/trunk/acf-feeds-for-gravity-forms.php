@@ -2,11 +2,11 @@
 /*
 Plugin Name: ACF Feeds for Gravity Forms 
 Description: Write Gravity Forms submission fields into ACF fields. Accumulate values over time.
-Version: 1.0.0
+Version: 1.0.1
 Author: Alex Chernov
 Author URI: https://alexchernov.com
 */
-define('GFACFF_ADDON_VERSION', '1.0.0');
+define('GFACFF_ADDON_VERSION', '1.0.1');
 
 add_action('gform_loaded', array('ACFFeeds_AddOn_Bootstrap', 'load'), 5);
  
